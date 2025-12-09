@@ -8,6 +8,7 @@ build
 .env
 .env.*
 !.env.example
+src/config/env.js
 
 # logs
 logs
