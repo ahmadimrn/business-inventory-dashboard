@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
-  create_at DateTime @default(now())
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  name     String
+  password String
+  products Product[]
 }
 
 model Product {
   id          Int    @id @default(autoincrement())
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id     Int
   name        String
   price       Int
   stock       Int
