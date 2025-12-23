@@ -10,12 +10,12 @@ export const getAll = async (user_id) => {
     return getAll;
 };
 
-export const create = async (req) => {
-    const { name, price, stock, description } = req.body;
+export const create = async (reqBody, userId) => {
+    const { name, price, stock, description } = reqBody;
 
     const newProduct = await prisma.product.create({
         data: {
-            user_id: req.user.id,
+            user_id: userId,
             name,
             price,
             stock,
@@ -26,4 +26,21 @@ export const create = async (req) => {
     return newProduct;
 };
 
-export const update = () => {};
+export const update = async (productId, reqBody, userId) => {
+    const { name, price, stock, description } = reqBody;
+
+    const updatedProduct = prisma.product.update({
+        where: {
+            id: productId,
+            user_id: userId,
+        },
+        data: {
+            name,
+            price,
+            stock,
+            description,
+        },
+    });
+
+    return updatedProduct;
+};
