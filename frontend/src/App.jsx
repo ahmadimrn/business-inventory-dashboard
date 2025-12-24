@@ -7,11 +7,14 @@ import MainLayout from "./pages/MainLayout";
 import AuthLayout from "./pages/AuthLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import User from "./pages/User";
 import { Navigate, Outlet } from "react-router";
 import "@fontsource/poppins/300.css";
 import "@fontsource/poppins/400.css";
 import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/700.css";
+import { ThemeProvider } from "@mui/material";
+import theme from "./theme";
 
 const App = () => {
     const RequireAuth = () => {
@@ -22,21 +25,27 @@ const App = () => {
 
     return (
         <div className="App">
-            <Routes>
-                <Route element={<AuthLayout />}>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                </Route>
-
-                <Route element={<RequireAuth />}>
-                    <Route element={<MainLayout />}>
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/analytics" element={<Analytics />} />
+            <ThemeProvider theme={theme}>
+                <Routes>
+                    <Route element={<AuthLayout />}>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
                     </Route>
-                </Route>
 
-                <Route path="/" element={<Navigate to="/products" replace />} />
-            </Routes>
+                    <Route element={<RequireAuth />}>
+                        <Route element={<MainLayout />}>
+                            <Route path="/products" element={<Products />} />
+                            <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/user" element={<User />} />
+                        </Route>
+                    </Route>
+
+                    <Route
+                        path="/"
+                        element={<Navigate to="/products" replace />}
+                    />
+                </Routes>
+            </ThemeProvider>
         </div>
     );
 };
