@@ -1,10 +1,15 @@
 import { Router } from "express";
 import * as controller from "../controllers/auth.controller.js";
-import { registerValidator } from "../middleware/auth.middleware.js";
+import {
+    authMiddleware,
+    registerValidator,
+} from "../middleware/auth.middleware.js";
 
 const router = Router();
 
 router.post("/login", controller.login);
 router.post("/register", registerValidator, controller.register);
+router.post("/refresh", controller.refresh);
+router.post("/logout", authMiddleware, controller.logout);
 
 export default router;
