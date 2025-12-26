@@ -8,11 +8,12 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  name     String
-  password String
-  products Product[]
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  password     String
+  refreshToken String?
+  products     Product[]
 }
 
 model Product {
