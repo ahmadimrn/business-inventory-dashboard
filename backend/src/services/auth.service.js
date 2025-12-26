@@ -1,10 +1,13 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../config/db.config.js";
-import { generateToken } from "../middleware/auth.middleware.js";
+import {
+    generateAccessToken,
+    generateRefreshToken,
+} from "../middleware/auth.middleware.js";
 
 export const register = async ({ name, email, password }) => {
     const existing = await prisma.user.findUnique({
-        where: { email },
+        where: { email: email },
     });
 
     if (existing) {
@@ -16,17 +19,26 @@ export const register = async ({ name, email, password }) => {
     const user = await prisma.user.create({
         data: {
             name,
-            email: email.toLowerCase(),
+            email: email,
             password: hashedPassword,
         },
     });
 
-    const token = await generateToken(user.id, user.name);
+    const accessToken = await generateAccessToken(user.id, user.name);
+    const refreshToken = await generateRefreshToken(user.id, user.name);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { refreshToken: hashedRefreshToken },
+    });
 
     return {
+        message: "User registered successfully",
         id: user.id,
         name: user.name,
-        token,
+        accessToken,
+        refreshToken,
     };
 };
 
@@ -45,11 +57,68 @@ export const login = async ({ email, password }) => {
         throw new Error("Invalid credentials");
     }
 
-    const token = await generateToken(user.id, user.name);
+    const accessToken = await generateAccessToken(user.id, user.name);
+    const refreshToken = await generateRefreshToken(user.id, user.name);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+
+    await prisma.user.update({
+        where: { email },
+        data: { refreshToken: hashedRefreshToken },
+    });
 
     return {
+        message: "User logged in successfully.",
         id: user.id,
         name: user.name,
-        token,
+        accessToken,
+        refreshToken,
     };
+};
+
+export const refresh = async (refreshToken) => {
+    if (!refreshToken) {
+        throw new Error("Unauthorized");
+    }
+
+    let payload;
+    try {
+        payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    } catch {
+        throw new Error("Forbidden");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: payload.id },
+    });
+
+    if (!user || !user.refreshToken) {
+        throw new Error("Forbidden");
+    }
+
+    const isValidToken = await bcrypt.compare(refreshToken, user.refreshToken);
+
+    if (!isValidToken) {
+        throw new Error("Token reuse detected");
+    }
+
+    const newAccessToken = generateAccessToken(user.id, user.name);
+    const newRefreshToken = generateRefreshToken(user.id, user.name);
+    const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: { refreshToken: hashedRefreshToken },
+    });
+
+    return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+    };
+};
+
+export const logout = async (userId) => {
+    await prisma.user.update({
+        where: { id: userId },
+        data: { refreshToken: null },
+    });
 };
