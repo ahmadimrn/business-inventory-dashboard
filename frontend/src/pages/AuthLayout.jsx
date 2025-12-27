@@ -1,38 +1,23 @@
-import React, { useState } from "react";
-import { BrowserRouter, Routes, Route, Link, Outlet } from "react-router";
-import {
-    AppBar,
-    Toolbar,
-    Typography,
-    Drawer,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemButton,
-    Box,
-    CssBaseline,
-    Container,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    Paper,
-    Grid,
-} from "@mui/material";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import { Outlet } from "react-router";
+import { Toolbar, Box, CssBaseline, Container, Card } from "@mui/material";
 
 const AuthLayout = () => {
     return (
         <>
             <CssBaseline />
-            <Navbar />
-
             <Toolbar />
-            <Box sx={{ display: "flex" }}>
-                <Outlet />
-            </Box>
+            <Container maxWidth="sm">
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    sx={{ mt: 5 }}
+                >
+                    <Card sx={{ width: "100%", borderRadius: 3, p: 5 }}>
+                        <Outlet />
+                    </Card>
+                </Box>
+            </Container>
         </>
     );
 };
