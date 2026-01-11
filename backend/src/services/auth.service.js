@@ -85,7 +85,6 @@ export const refresh = async (refreshToken) => {
 
     let payload;
     try {
-        // Verify the raw refresh token
         payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (err) {
         throw new Error("Invalid refresh token");
@@ -99,18 +98,15 @@ export const refresh = async (refreshToken) => {
         throw new Error("Forbidden");
     }
 
-    // Compare the raw token with hashed token stored in DB
     const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
     if (!isValid) {
         throw new Error("Token reuse detected");
     }
 
-    // Generate new tokens
     const newAccessToken = await generateAccessToken(user.id, user.name);
     const newRefreshToken = await generateRefreshToken(user.id, user.name);
     const hashedRefreshToken = await bcrypt.hash(newRefreshToken, 10);
 
-    // Persist new refresh token
     await prisma.user.update({
         where: { id: user.id },
         data: { refreshToken: hashedRefreshToken },
